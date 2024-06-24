@@ -1,0 +1,74 @@
+unit Model.Connection;
+
+interface
+
+uses ZAbstractConnection, ZConnection,ZAbstractRODataset, ZAbstractDataset, ZDataset, ZAbstractTable,
+     System.IniFiles,System.SysUtils;
+
+var
+   ZConnection : TZConnection;
+
+function SetupConnection(ZConn:TZConnection):String;
+function Connect : TZConnection;
+procedure Disconnect;
+
+
+implementation
+
+function SetupConnection(ZConn:TZConnection):String;
+var
+   arq_ini : String;
+   ini : TIniFile;
+begin
+   try
+      try
+
+         arq_ini :=  GetCurrentDir + '\ServerTarefas.ini';
+         //verificando se o arquivo INI com as configuracoes do banco de dados
+         if not FileExists(arq_ini) then begin
+            Result := 'Arquivo INI não enontrado ' + arq_ini;
+            Exit;
+         end;
+
+         //instanciar arquivo INI...
+         ini := TIniFile.Create(arq_ini);
+         ZConn.Connected   := False;
+         ZConn.Database    := ini.ReadString('Banco de Dados', 'Database', '');//'Provider=MSDASQL.1;Data Source=tarefas';
+         ZConn.LoginPrompt := false;
+         ZConn.HostName    := ini.ReadString('Banco de Dados', 'HostName', '')//'BRUNO\SQLEXPRESS';
+         ZConn.Protocol    := 'ado';
+         ZConn.Connected := True;
+
+         Result := 'Conectou';
+
+      except on ex:exception do
+         Result := 'Erro ao configurar banco: ' + ex.Message;
+      end;
+   finally
+      if Assigned(ini) then
+         ini.DisposeOf;
+   end;
+
+end;
+
+function Connect : TZConnection;
+begin
+    ZConnection := TZConnection.Create(nil);
+    SetupConnection(ZConnection);
+    ZConnection.Connected := true;
+
+    Result := ZConnection;
+end;
+
+procedure Disconnect;
+begin
+    if Assigned(ZConnection) then
+    begin
+        if ZConnection.Connected then
+            ZConnection.Connected := false;
+
+        ZConnection.Free;
+    end;
+
+end;
+end.

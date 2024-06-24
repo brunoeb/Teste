@@ -1,0 +1,33 @@
+program ApiTeste;
+
+{$APPTYPE CONSOLE}
+
+{$R *.res}
+
+uses
+  Horse,
+  Horse.Jhonson,
+  Horse.BasicAuthentication,
+  Horse.Compression,
+  Horse.HandleException,
+  System.SysUtils,
+  Controller.Tarefas in 'Controller\Controller.Tarefas.pas',
+  Model.Connection in 'Model\Model.Connection.pas',
+  Model.Tarefas in 'Model\Model.Tarefas.pas',
+  Util.Util in 'Util\Util.Util.pas';
+
+begin
+  THorse.Use(Compression());
+  THorse.Use(HandleException)
+  THorse.Use(Jhonson);   ;
+  THorse.Use(HorseBasicAuthentication(
+    function (const AUsername,APassword:String):boolean
+    begin
+      Result := AUsername.Equals('usuario') and APassword.Equals('T@r#fa');
+
+    end
+    ));
+
+  Controller.Tarefas.Regsitry;
+  THorse.Listen(9000);
+end.

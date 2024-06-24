@@ -1,0 +1,432 @@
+unit Model.Tarefas;
+
+interface
+
+uses Horse,ZAbstractConnection, ZConnection,System.SysUtils,Model.Connection,ZDataset,Util.Util,System.Generics.Collections;
+
+type
+   TTarefas = class
+     private
+       FID_TAREFA     : integer;
+       FDT_CADASTRO   : TDateTime;
+       FDT_PREVISAO   : TDateTime;
+       FDT_ENTREGA    : TDateTime;
+       FRESPONSAVEL   : String;
+       FSTATUS_TAREFA : String;
+       FDESCRICAO     : String;
+       FPRIORIDADE    : String;
+
+     public
+       constructor Create;
+       destructor  Destroy; override;
+       property ID_TAREFA     : integer    read FID_TAREFA     write FID_TAREFA;
+       property DT_CADASTRO   : TDateTime  read FDT_CADASTRO   write FDT_CADASTRO;
+       property DT_PREVISAO   : TDateTime  read FDT_PREVISAO   write FDT_PREVISAO;
+       property DT_ENTREGA    : TDateTime  read FDT_ENTREGA    write FDT_ENTREGA;
+       property RESPONSAVEL   : String     read FRESPONSAVEL   write FRESPONSAVEL;
+       property STATUS_TAREFA : String     read FSTATUS_TAREFA write FSTATUS_TAREFA;
+       property DESCRICAO     : String     read FDESCRICAO     write FDESCRICAO;
+       property PRIORIDADE    : String     read FPRIORIDADE    write FPRIORIDADE;
+
+       function EncerradasUltimosDias(const AQuery:TDictionary<string, string>;out erro: string): TZQuery;
+       function MediaPrioridadePendentes(out erro: string): TZQuery;
+       function TotalTarefas(out erro: string): TZQuery;
+       function ListarTarefas(const AQuery:TDictionary<string, string>;out erro:string):TZQuery;
+       function Cadastrar(out erro : string):Boolean;
+       function Excluir(out erro : string):Boolean;
+       function AlterarStatus(out erro:String):Boolean;
+
+
+
+   end;
+
+implementation
+
+
+{ TTarefas }
+
+function TTarefas.AlterarStatus(out erro: String): Boolean;
+var
+    qry : TZQuery;
+begin
+  {$REGION 'VALIDACOES'}
+
+    if ID_TAREFA = 0 then begin
+       Result := false;
+       erro := 'Informe o id da tarefa ';
+       exit;
+    end;
+
+    if STATUS_TAREFA = ''  then begin
+       Result := false;
+       erro := 'Informe o status da tarefa ';
+       exit;
+    end;
+
+    if (STATUS_TAREFA='Encerrada') and (DT_ENTREGA =0)  then begin
+       Result := false;
+       erro := 'Para o status encerramento é necesario informar a data de encerramento. ';
+       exit;
+    end;
+  {$ENDREGION 'FIM VALIDACOES'}
+
+  try
+    qry := TZQuery.Create(nil);
+    qry.Connection := Model.Connection.ZConnection;
+
+   {$REGION 'VERIFICANDO SE A TAREFA EXISTE'}
+     with qry do begin
+       Active := false;
+       sql.Clear;
+       SQL.Add('SELECT IDTAREFA FROM [DBO].[TAREFAS] WHERE IDTAREFA='+ID_TAREFA.ToString);
+
+       Open;
+     end;
+
+     if qry.IsEmpty then begin
+       erro := 'Erro ao localizar a tarefa para exclusão , IDTAREFA= '+ID_TAREFA.ToString;
+       Result := False;
+       Exit;
+     end;
+   {$ENDREGION 'FINAL DA VERIFICAO SE A TAREFA EXISTE'}
+
+    with qry do begin
+      Active := false;
+      sql.Clear;
+      SQL.Add('UPDATE [dbo].[TAREFAS] SET '+
+              'STATUSTAREFA=:STATUSTAREFA '+
+              ifthen(DT_ENTREGA=0,'',',ENTREGA=:ENTREGA ')+
+              'WHERE IDTAREFA=:IDTAREFA');
+
+      ParamByName('IDTAREFA').Value     := ID_TAREFA;
+      ParamByName('STATUSTAREFA').Value := STATUS_TAREFA;
+      if DT_ENTREGA>0 then
+         ParamByName('ENTREGA').Value := DT_ENTREGA;
+
+      ExecSQL;
+    end;
+
+    qry.Free;
+    erro   := '';
+    result := true;
+
+    except on ex:EHorseException do begin
+        erro := 'Erro ao alterar cliente: ' + ex.Message;
+        Result := false;
+      end;
+    end;
+
+end;
+
+function TTarefas.Cadastrar(out erro: string): Boolean;
+var
+   qry : TZQuery;
+begin
+
+  {$REGION 'INICIO VALIDACOES'}
+    if DT_CADASTRO =0  then begin
+       Result := false;
+       erro := 'Informe a data de cadastro da tarefa ';
+       exit;
+    end;
+
+    if DT_PREVISAO =0  then begin
+       Result := false;
+       erro := 'Informe a data de previsao de entrega da tarefa ';
+       exit;
+    end;
+
+    if DESCRICAO = ''  then begin
+       Result := false;
+       erro := 'Informe a descrição da tarefa ';
+       exit;
+    end;
+
+    if RESPONSAVEL.IsEmpty  then begin
+       Result := false;
+       erro := 'Informe o nome do responsavel pela tarefa ';
+       exit;
+    end;
+
+    if STATUS_TAREFA.IsEmpty  then begin
+       Result := false;
+       erro := 'Informe o status da tarefa ';
+       exit;
+    end;
+
+  {$ENDREGION 'FIM VALIDACOES'}
+
+  try
+    qry := TZQuery.Create(nil);
+    qry.Connection := Model.Connection.ZConnection;
+
+
+    with qry do begin
+
+      if ID_TAREFA = 0 then begin
+        {$REGION 'BUSCANDO PROXIMO ID_DISPONIVEL'}
+
+          SQL.Clear;
+          SQL.Add('SELECT CAST(MAX(IDTAREFA) AS INTEGER) AS IDTAREFA FROM [TAREFAS].[DBO].[TAREFAS]');
+          active := true;
+          ID_TAREFA := FieldByName('IDTAREFA').AsInteger+1;
+        {$ENDREGION 'BUSCANDO PROXIMO ID_DISPONIVEL'}
+
+        Active := false;
+        sql.Clear;
+        SQL.Add('INSERT INTO [TAREFAS].[DBO].[TAREFAS] (IDTAREFA, CADASTRO, PREVISAO, RESPONSAVEL, STATUSTAREFA, DESCRICAO,PRIORIDADE)  '+
+                'VALUES(:IDTAREFA, :CADASTRO, :PREVISAO, :RESPONSAVEL, :STATUSTAREFA, :DESCRICAO, :PRIORIDADE) MATCHING(:IDTAREFA)');
+                Params.ParamByName('IDTAREFA').Value     := ID_TAREFA;
+                Params.ParamByName('CADASTRO').Value      := DT_CADASTRO;
+                Params.ParamByName('PREVISAO').Value      := DT_PREVISAO;
+                Params.ParamByName('RESPONSAVEL').Value   := RESPONSAVEL;
+                Params.ParamByName('STATUSTAREFA').Value := STATUS_TAREFA;
+                Params.ParamByName('DESCRICAO').Value     := DESCRICAO;
+                Params.ParamByName('PRIORIDADE').Value    := PRIORIDADE;
+      end else begin
+        Active := false;
+        sql.Clear;
+        SQL.Add('UPDATE  [TAREFAS].[DBO].[TAREFAS]  SET  '+
+                'CADASTRO =:CADASTRO, PREVISAO =:PREVISAO, RESPONSAVEL =:RESPONSAVEL, STATUSTAREFA =:STATUSTAREFA, DESCRICAO =:DESCRICAO, PRIORIDADE =:PRIORIDADE  '+
+                'WHERE (IDTAREFA =:IDTAREFA)');
+                Params.ParamByName('CADASTRO').Value      := DT_CADASTRO;
+                Params.ParamByName('PREVISAO').Value      := DT_PREVISAO;
+                Params.ParamByName('RESPONSAVEL').Value   := RESPONSAVEL;
+                Params.ParamByName('STATUSTAREFA').Value := STATUS_TAREFA;
+                Params.ParamByName('DESCRICAO').Value     := DESCRICAO;
+                Params.ParamByName('PRIORIDADE').Value    := PRIORIDADE;
+                Params.ParamByName('IDTAREFA').Value     := ID_TAREFA;
+
+      end;
+
+      ExecSQL;
+    end;
+
+    qry.Free;
+    erro   := '';
+    result := true;
+
+  except on ex:EHorseException do begin
+      erro   := 'Erro ao cadastrar tarefas: ' + ex.Message;
+      Result := false;
+    end;
+  end;
+end;
+
+constructor TTarefas.Create;
+begin
+   Model.Connection.Connect;
+end;
+
+destructor TTarefas.Destroy;
+begin
+   Model.Connection.Disconnect;
+
+   inherited;
+end;
+
+function TTarefas.Excluir(out erro: string): Boolean;
+var
+    qry : TZQuery;
+begin
+  if ID_TAREFA =0  then begin
+     Result := false;
+     erro := 'Informe o codigo da tarefa para ser excluida ';
+     exit;
+  end;
+
+  try
+    try
+      qry := TZQuery.Create(nil);
+      qry.Connection := Model.Connection.ZConnection;
+
+      {$REGION 'VERIFICANDO SE A TAREFA EXISTE'}
+        with qry do begin
+          Active := false;
+          sql.Clear;
+          SQL.Add('SELECT IDTAREFA FROM [DBO].[TAREFAS] WHERE IDTAREFA='+ID_TAREFA.ToString);
+
+          Open;
+        end;
+
+        if qry.IsEmpty then begin
+          erro := 'Erro ao localizar a tarefa para exclusão , IDTAREFA= '+ID_TAREFA.ToString;
+          Result := False;
+          Exit;
+        end;
+     {$ENDREGION 'FINAL DA VERIFICACAO SE A TAREFA EXISTE'}
+
+      with qry do begin
+        Active := false;
+        sql.Clear;
+        SQL.Add('DELETE FROM [DBO].[TAREFAS] WHERE IDTAREFA=:IDTAREFA');
+        ParamByName('IDTAREFA').Value := ID_TAREFA;
+        ExecSQL;
+      end;
+
+      qry.Free;
+      erro   := '';
+      result := true;
+
+    except on ex:EHorseException do begin
+        erro := 'Erro ao excluir a tarefa: ' + ex.Message;
+        Result := false;
+      end;
+    end;
+  finally
+    qry.Free;
+   end;
+end;
+
+function TTarefas.ListarTarefas(const AQuery:TDictionary<string, string>;out erro: string): TZQuery;
+var
+    qry : TZQuery;
+    fl_w,fl_o:String;
+begin
+   try
+     qry := TZQuery.Create(nil);
+     qry.Connection := Model.Connection.ZConnection;
+     fl_w:='';
+     if AQuery.ContainsKey('idtarefa') then
+        fl_w:=' AND  (idtarefa = :idtarefa)';
+     if AQuery.ContainsKey('statustarefa') then
+        fl_w :=  fl_w + ' AND  (statustarefa = :statustarefa)';
+     if AQuery.ContainsKey('prioridade') then
+        fl_w :=  fl_w + ' AND  (prioridade = :prioridade)';
+
+
+     fl_o := 'CADASTRO';
+     if AQuery.ContainsKey('sort') then
+        fl_o := AQuery.Items['sort'];
+
+
+     with qry do begin
+       Active := false;
+       SQL.Clear;
+       SQL.Add('SELECT * FROM [TAREFAS].[dbo].[TAREFAS] WHERE 1=1 '+
+               fl_w+' '+
+               'ORDER BY '+fl_o);
+     if AQuery.ContainsKey('idtarefa') then
+        qry.ParamByName('idtarefa').AsInteger :=AQuery.Items['idtarefa'].ToInteger;
+     if AQuery.ContainsKey('statustarefa') then
+        qry.ParamByName('statustarefa').AsString :=  AQuery.Items['statustarefa'];
+     if AQuery.ContainsKey('prioridade') then
+        qry.ParamByName('prioridade').AsString :=  AQuery.Items['prioridade'];
+
+
+       Active := true;
+     end;
+
+     erro := '';
+
+     Result := qry;
+
+   except on ex:EHorseException do begin
+       erro := 'Erro ao consultar tarefas: ' + ex.Message;
+       Result := nil;
+      end;
+   end;
+end;
+
+
+function TTarefas.MediaPrioridadePendentes(out erro: string): TZQuery;
+var
+    qry : TZQuery;
+begin
+   try
+     qry := TZQuery.Create(nil);
+     qry.Connection := Model.Connection.ZConnection;
+
+
+     with qry do begin
+       Active := false;
+       SQL.Clear;
+       SQL.Add('SELECT COUNT(IDTAREFA) QTDE, PRIORIDADE,'+
+               'CAST((COUNT(IDTAREFA)/'+
+               'cast((select COUNT(IDTAREFA) from [DBO].TAREFAS where (STATUSTAREFA = '+QuotedStr('Pendente')+'))as numeric(18,2)))*100 as numeric(9,2)) MEDIA '+
+               'FROM [DBO].TAREFAS '+
+               'WHERE (STATUSTAREFA = '+QuotedStr('Aberta')+') '+
+               'GROUP BY PRIORIDADE '+
+               'ORDER BY 3 DESC   ');
+       Active := true;
+     end;
+
+     erro := '';
+
+     Result := qry;
+
+   except on ex:EHorseException do begin
+       erro := 'Erro ao consultar tarefas: ' + ex.Message;
+       Result := nil;
+      end;
+   end;
+
+end;
+
+function TTarefas.TotalTarefas(out erro: string): TZQuery;
+var
+    qry : TZQuery;
+begin
+   try
+     qry := TZQuery.Create(nil);
+     qry.Connection := Model.Connection.ZConnection;
+
+
+     with qry do begin
+       Active := false;
+       SQL.Clear;
+       SQL.Add('SELECT COUNT(IDTAREFA) IDTAREFA FROM [TAREFAS].[dbo].[TAREFAS]  ');
+       Active := true;
+     end;
+
+     erro := '';
+
+     Result := qry;
+
+   except on ex:EHorseException do begin
+       erro := 'Erro ao consultar tarefas: ' + ex.Message;
+       Result := nil;
+      end;
+   end;
+end;
+
+function TTarefas.EncerradasUltimosDias(const AQuery:TDictionary<string, string>;out erro: string): TZQuery;
+var
+    qry : TZQuery;
+  fl_w: string;
+begin
+   try
+     qry := TZQuery.Create(nil);
+     qry.Connection := Model.Connection.ZConnection;
+
+     fl_w := '';
+     if AQuery.ContainsKey('dias') then
+        fl_w:=' AND  (DATEDIFF(day,ENTREGA,CURRENT_TIMESTAMP)<= :dias)';
+
+
+     with qry do begin
+       Active := false;
+       SQL.Clear;
+       SQL.Add('SELECT COUNT(IDTAREFA) IDTAREFA FROM [TAREFAS].[dbo].[TAREFAS]  '+
+               'WHERE (STATUSTAREFA = '+QuotedStr('Encerrada')+') '+fl_w);
+
+       if AQuery.ContainsKey('dias') then
+          ParamByName('dias').AsInteger := AQuery.Items['dias'].ToInteger;
+
+
+       Active := true;
+     end;
+
+     erro := '';
+
+     Result := qry;
+
+   except on ex:EHorseException do begin
+       erro := 'Erro ao consultar tarefas: ' + ex.Message;
+       Result := nil;
+      end;
+   end;
+end;
+
+
+end.
