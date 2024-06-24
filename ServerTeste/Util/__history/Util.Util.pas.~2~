@@ -1,0 +1,17 @@
+unit Util.Util;
+
+interface
+
+function Ifthen(Condicao:boolean;ValorTrue,ValorFalse:Variant):variant;
+
+implementation
+
+function Ifthen(Condicao:boolean;ValorTrue,ValorFalse:Variant):variant;
+begin
+  if Condicao then
+    Result := ValorTrue
+  else
+    Result := ValorFalse;
+end;
+
+end.

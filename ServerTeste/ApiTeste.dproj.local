@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2024/02/19 23:10:22.000.334,=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2024/06/20 22:04:37.000.107,C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Project1.dproj=C:\Delph\Projetos\ApiTeste\ApiTeste.dproj</Transaction>
+    <Transaction>2024/06/21 18:49:04.000.369,=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/21 18:49:21.000.290,C:\Delph\Projetos\ApiTeste\Controller\Controller.Tarefas.pas=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/21 20:38:52.000.880,=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/21 22:37:35.000.445,=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/21 22:37:53.000.951,C:\Delph\Projetos\ApiTeste\Unit1.pas=C:\Delph\Projetos\ApiTeste\Model\Model.Connection.pas</Transaction>
+    <Transaction>2024/06/21 23:00:01.000.797,=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/21 23:00:31.000.062,C:\Delph\Projetos\ApiTeste\Unit1.pas=C:\Delph\Projetos\ApiTeste\Model\Model.Tarefas.pas</Transaction>
+    <Transaction>2024/06/22 01:33:47.000.681,=C:\Delph\Projetos\ApiTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/22 01:34:15.000.356,C:\Delph\Projetos\ApiTeste\Unit1.pas=C:\Delph\Projetos\ApiTeste\Util\Util.Util.pas</Transaction>
+  </Transactions>
+</BorlandProject>
