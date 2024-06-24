@@ -1,0 +1,54 @@
+unit Controller.Tarefas;
+
+interface
+
+uses Horse,
+     RESTRequest4D,
+     System.JSON,
+     System.SysUtils,
+
+     ZDataset,
+     DataSet.Serialize,
+     Horse.Jhonson,
+     Util.Util;
+
+function CadastrarTarefa(objTarefa:TJSONObject; out erro: string):boolean;
+
+implementation
+
+
+function CadastrarTarefa(objTarefa:TJSONObject; out erro: string):boolean;
+var
+  lResponse: IResponse;
+begin
+
+   try
+
+     lResponse := TRequest.New.BaseURL('http://localhost:9000/')
+                          .Resource('tarefa')
+                          .BasicAuthentication('usuario','T@r#fa')
+                          .Accept('application/json')
+                          .AddBody(objTarefa.ToString)
+                          .post;
+     if lResponse.StatusCode <> 201 then begin
+        Result := false;
+        erro := 'Erro ao tentar castrar a tarefa :  '+
+                 lResponse.StatusCode.ToString+' '+
+                 lResponse.Content;
+
+
+     end else begin
+        erro := '';
+        objTarefa := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(lResponse.Content), 0) as TJSONObject;
+     end;
+     Result := true;
+   except on E: Exception do begin
+       Result := false;
+       erro := 'Erro ao tentar se comunicar com o sevidor';
+     end;
+   end;
+end;
+
+
+
+end.

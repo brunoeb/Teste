@@ -1,0 +1,147 @@
+unit Controller.Tarefas;
+
+interface
+
+uses Horse,
+     RESTRequest4D,
+     System.JSON,
+     System.SysUtils,
+
+     ZDataset,
+     DataSet.Serialize,
+     Horse.Jhonson,
+     Util.Util,
+     view.Principal;
+
+function CadastrarTarefa(objTarefa:TJSONObject; out erro: string):boolean;
+
+implementation
+
+
+function CadastrarTarefa(objTarefa:TJSONObject; out erro: string):boolean;
+var
+  lResponse: IResponse;
+begin
+
+   try
+
+     lResponse := TRequest.New.BaseURL('http://localhost:9000/')
+                          .Resource('tarefa')
+                          .BasicAuthentication('usuario','T@r#fa')
+                          .Accept('application/json')
+                          .AddBody(objTarefa.ToString)
+                          .post;
+     if lResponse.StatusCode <> 201 then begin
+        Result := false;
+        erro := 'Erro ao tentar castrar a tarefa :  '+
+                 lResponse.StatusCode.ToString+' '+
+                 lResponse.Content;
+
+
+     end else begin
+        erro := '';
+        objTarefa := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(lResponse.Content), 0) as TJSONObject;
+        edId.Text  := objTarefas.GetValue<string>('idtarefa','');
+     end;
+     Result := false;
+   except on E: Exception do begin
+       ShowMessage('Erro ao tentar se comunicar com o sevidor');
+     end;
+   end;
+end;
+
+procedure AtualizarStatus(Req:THorseRequest; Res : THorseResponse;Next: TProc);
+var
+  Tarefa   : TTarefas;
+  objTarefa: TJSONObject;
+  erro     : string;
+  body     : TJsonValue;
+begin
+    // Conexao com o banco...
+  try
+    // no create esta criando a conexao com o banco de dados
+    Tarefa := TTarefas.Create;
+  except on E:EHorseException do begin
+
+      res.Send('Erro ao conectar com o banco').Status(500);
+      exit;
+     end;
+  end;
+
+  try
+    try
+      Tarefa.ID_TAREFA := Req.Params['id'].ToInteger;
+      try
+        body := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(req.Body), 0) as TJsonValue;
+        Tarefa.STATUS_TAREFA := body.GetValue<string>('statustarefa', '');
+//        if body.GetValue<string>('entrega',  '') <> '' then
+  //         Tarefa.DT_ENTREGA    := JSONDate_To_Datetime(body.GetValue<string>('entrega',  ''));
+
+      finally
+        body.Free;
+      end;
+
+      if NOT Tarefa.AlterarStatus(erro) then begin
+         Res.Send(erro).Status(404);
+         Exit
+      end;
+
+    except on ex:exception do begin
+        res.Send(ex.Message).Status(400);
+        exit;
+      end;
+    end;
+
+    objTarefa := TJSONObject.Create;
+    objTarefa.AddPair('success', true);
+
+    res.Send<TJSONObject>(objTarefa).Status(200);
+  finally
+    Tarefa.Free;
+  end;
+
+end;
+
+procedure ExcluirTarefa(Req:THorseRequest; Res : THorseResponse;Next: TProc);
+var
+    Tarefa : TTarefas;
+    objTarefa: TJSONObject;
+    erro : string;
+begin
+    // Conexao com o banco...
+  try
+      Tarefa := TTarefas.Create;
+  except on e:EHorseException do begin
+      res.Send('Erro ao conectar com o banco').Status(500);
+      exit;
+    end;
+  end;
+
+  try
+    try
+      Tarefa.ID_TAREFA := Req.Params['id'].ToInteger;
+
+      if NOT Tarefa.Excluir(erro) then begin
+         Res.Send(erro).Status(404);
+         Exit
+      end;
+
+    except on ex:EHorseException do begin
+        res.Send(ex.Message).Status(400);
+        exit;
+      end;
+    end;
+
+
+    objTarefa := TJSONObject.Create;
+    objTarefa.AddPair('success', true);
+    objTarefa.AddPair('id', Tarefa.ID_TAREFA.ToString);
+
+    res.Send<TJSONObject>(objTarefa).Status(200);
+  finally
+    Tarefa.Free;
+  end;
+end;
+
+
+end.

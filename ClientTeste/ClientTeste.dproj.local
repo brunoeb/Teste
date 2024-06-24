@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2024/02/19 23:10:22.000.334,=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 03:29:04.000.064,=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 03:33:01.000.920,C:\Delph\Projetos\ClientTeste\View\View.Principal.dfm=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>2024/06/23 03:33:01.000.920,C:\Delph\Projetos\ClientTeste\View\View.Principal.pas=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 03:33:15.000.739,C:\Delph\Projetos\ClientTeste\ClientTeste.dproj=C:\Users\Usurio\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2024/06/23 09:59:02.000.462,=C:\Delph\Projetos\ClientTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 09:59:53.000.664,C:\Delph\Projetos\ClientTeste\Unit1.pas=C:\Delph\Projetos\ClientTeste\Util\Util.Util.pas</Transaction>
+    <Transaction>2024/06/23 11:27:31.000.041,=C:\Delph\Projetos\ClientTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 11:27:50.000.685,C:\Delph\Projetos\ClientTeste\Unit1.pas=C:\Delph\Projetos\ClientTeste\Model\Model.DM.pas</Transaction>
+    <Transaction>2024/06/23 11:27:50.000.685,C:\Delph\Projetos\ClientTeste\Unit1.dfm=C:\Delph\Projetos\ClientTeste\Model\Model.DM.dfm</Transaction>
+    <Transaction>2024/06/23 12:35:11.000.199,=C:\Delph\Projetos\ClientTeste\Controller\Controller.Tarefas.pas</Transaction>
+    <Transaction>2024/06/23 12:36:25.000.344,=C:\Delph\Projetos\ClientTeste\Model\Model.Tarefas.pas</Transaction>
+    <Transaction>2024/06/23 13:30:35.286,=C:\Delph\Projetos\ClientTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 13:33:02.492,C:\Delph\Projetos\ClientTeste\Model\Model.RestRequest.pas=C:\Delph\Projetos\ClientTeste\Unit1.pas</Transaction>
+    <Transaction>2024/06/23 13:49:39.975,C:\Delph\Projetos\ClientTeste\Model\Model.RestRequest.pas=</Transaction>
+    <Transaction>2024/06/23 15:02:31.661,C:\Delph\Projetos\ClientTeste\Model\Model.DM.pas=</Transaction>
+    <Transaction>2024/06/23 15:02:52.233,C:\Delph\Projetos\ClientTeste\Model\Model.Tarefas.pas=</Transaction>
+    <Transaction>2024/06/23 15:33:24.714,=C:\Delph\Projetos\ClientTeste\Controller\Controller.Tarefas.pas</Transaction>
+    <Transaction>2024/06/23 15:56:23.750,C:\Delph\Projetos\ClientTeste\Controller\Controller.Tarefas.pas=</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,16 @@
+unit Model.RestRequest;
+
+uses
+  REST.Types, REST.Client,
+  REST.Authenticator.Basic;
+
+
+var
+   RRestRequest : TRESTClient;
+
+
+interface
+
+implementation
+
+end.

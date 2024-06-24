@@ -1,0 +1,11 @@
+unit Model.RestRequest;
+
+uses
+  REST.Types, REST.Client,
+  REST.Authenticator.Basic;
+
+interface
+
+implementation
+
+end.
