@@ -1,0 +1,20 @@
+program ClientTeste;
+
+uses
+  Vcl.Forms,
+  View.Principal in 'View\View.Principal.pas' {FormPrincipal},
+  Util.Util in 'Util\Util.Util.pas',
+  Model.DM in 'Model\Model.DM.pas' {DM: TDataModule},
+  Controller.Tarefas in 'Controller\Controller.Tarefas.pas',
+  Model.Tarefas in 'Model\Model.Tarefas.pas',
+  Model.RestRequest in 'Model\Model.RestRequest.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TFormPrincipal, FormPrincipal);
+  Application.CreateForm(TDM, DM);
+  Application.Run;
+end.
